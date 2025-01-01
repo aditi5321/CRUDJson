@@ -15,7 +15,6 @@ const User: React.FC<UserPropsWithDelete> = ({ id, name, email, onDelete }) => {
       <span>{name}</span>
       <span>{email}</span>
       <span>
-        <button className="border-2 border-black p-1 mr-2">edit</button>
         <button className="border-2 border-black p-1" onClick={handleDelete}>
           delete
         </button>

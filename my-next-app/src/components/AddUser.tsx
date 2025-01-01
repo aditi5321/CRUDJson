@@ -20,9 +20,9 @@ const [state, setState] =useState({
     }))
   };
   return (
-    <div>
+    <div className="flex items-center justify-center mb-10">
       <form onSubmit={handleOnSubmit}>
-        <h3>Add User</h3>
+        <h3 className="text-center">Add User</h3>
         <input type="text" placeholder="Name" value={state.name} name="name" onChange={(e)=>setState((prevState)=>({...prevState, name: e.target.value}))} />
         <input type="email" placeholder="Email" value={state.email} name="email" onChange={(e)=>setState((prevState)=>({...prevState, email: e.target.value}))}/>
         <button onSubmit={handleOnSubmit}>Add</button>
