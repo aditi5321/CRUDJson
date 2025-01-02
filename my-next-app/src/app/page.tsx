@@ -19,10 +19,10 @@ export interface UserProps {
 export default function Home() {
   const [state, setState] = useState<{
     users: UserProps[];
-    sortDirection: "asc" | UserProps[];
+    sortDirection: "asc" | "desc";
   }>({
     users: [],
-    sortDirection: [],
+    sortDirection: "asc",
   });
 
   useEffect(() => {
@@ -98,13 +98,16 @@ export default function Home() {
       if (a.name < b.name) {
         return state.sortDirection === "asc" ? -1 : 1;
       }
+      if (a.name > b.name) {
+        return state.sortDirection === "asc" ? 1 : -1;
+      }
       return 0;
     });
-    setState((prevState) => ({
+    setState((prevState)=>({
       ...prevState,
       users: sortUsers,
-      sortDirection: state.sortDirection === "asc" ? [] : "asc",
-    }));
+      sortDirection: state.sortDirection === "asc" ? "desc" : "asc"
+    }))
   };
   console.log(state.users);
   return (
@@ -118,12 +121,8 @@ export default function Home() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead
-                onClick={handleSortByName}
-                style={{ cursor: "pointer" }}
-              >
-                Name
-              </TableHead>
+              <TableHead onClick={handleSortByName}
+                style={{ cursor: "pointer" }}>Name</TableHead>
               <TableHead>Email</TableHead>
               <TableHead className="text-right">Delete</TableHead>
             </TableRow>
