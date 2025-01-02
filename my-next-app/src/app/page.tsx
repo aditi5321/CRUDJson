@@ -1,7 +1,15 @@
 "use client";
 import AddUser from "@/components/AddUser";
-import User from "@/components/User";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export interface UserProps {
   id: number;
@@ -9,7 +17,13 @@ export interface UserProps {
   email: string;
 }
 export default function Home() {
-  const [state, setState] = useState<{ users: UserProps[] }>({ users: [] });
+  const [state, setState] = useState<{
+    users: UserProps[];
+    sortDirection: "asc" | UserProps[];
+  }>({
+    users: [],
+    sortDirection: [],
+  });
 
   useEffect(() => {
     fetchData();
@@ -58,7 +72,7 @@ export default function Home() {
     }
   };
 
-  const onDelete = async (id:number) => {
+  const onDelete = async (id: number) => {
     await fetch(`https://jsonplaceholder.typicode.com/users/${id}`, {
       method: "DELETE",
     })
@@ -78,25 +92,64 @@ export default function Home() {
         console.log(err);
       });
   };
+
+  const handleSortByName = () => {
+    const sortUsers = [...state.users].sort((a, b) => {
+      if (a.name < b.name) {
+        return state.sortDirection === "asc" ? -1 : 1;
+      }
+      return 0;
+    });
+    setState((prevState) => ({
+      ...prevState,
+      users: sortUsers,
+      sortDirection: state.sortDirection === "asc" ? [] : "asc",
+    }));
+  };
   console.log(state.users);
   return (
     <div>
       <h1 className="text-center mb-10 underline font-semibold">
-        CRUD JSONPlaceholder User
+        A list of User Details.
       </h1>
       <AddUser onAdd={onAdd} />
       <div>
-        {state.users?.map((user) => {
-          return (
-            <User
-              id={user.id}
-              key={user.id}
-              name={user.name}
-              email={user.email}
-              onDelete={onDelete}
-            />
-          );
-        })}
+        <Table className="m-[5px] ml-[20%] w-[800px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">ID</TableHead>
+              <TableHead
+                onClick={handleSortByName}
+                style={{ cursor: "pointer" }}
+              >
+                Name
+              </TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead className="text-right">Delete</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {state.users?.map((user, index) => {
+              return (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{user.id}</TableCell>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell className="text-right">
+                    <button
+                      className="border-2 border-black p-1"
+                      onClick={() => (
+                        onDelete(user.id), toast("User Detail is deleting")
+                      )}
+                    >
+                      delete
+                    </button>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
