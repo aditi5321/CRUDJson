@@ -1,5 +1,6 @@
 "use client";
 import AddUser from "@/components/AddUser";
+import { ArrowUpDown } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -8,7 +9,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect, useState } from "react";
+
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+
+import React, { useEffect, useState } from "react";
+
 import { toast } from "sonner";
 
 export interface UserProps {
@@ -16,15 +27,89 @@ export interface UserProps {
   name: string;
   email: string;
 }
+
 export default function Home() {
   const [state, setState] = useState<{
     users: UserProps[];
-    sortDirection: "asc" | "desc";
   }>({
     users: [],
-    sortDirection: "asc",
   });
+  const [sorting, setSorting] = React.useState<SortingState>([]);
 
+  const table = useReactTable({
+    data: state.users,
+    columns: [
+      {
+        accessorKey: "id",
+        header: ({ column }) => {
+          return (
+            <button
+              className=" text-gray-500 hover:text-black flex items-center"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              ID
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </button>
+          );
+        },
+      },
+      {
+        accessorKey: "name",
+        header: ({ column }) => {
+          return (
+            <button
+              className=" text-gray-500 hover:text-black  flex items-center"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Name
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </button>
+          );
+        },
+      },
+      {
+        accessorKey: "email",
+        header: ({ column }) => {
+          return (
+            <button
+              className=" text-gray-500 hover:text-black flex items-center"
+              onClick={() =>
+                column.toggleSorting(column.getIsSorted() === "asc")
+              }
+            >
+              Email
+              <ArrowUpDown className="ml-2 h-4 w-4" />
+            </button>
+          );
+        },
+      },
+      {
+        header: "Delete",
+        cell: (info) => (
+          <button
+            className="border-2 border-black p-1"
+            onClick={() => {
+              const userId = info.row.original.id;
+              onDelete(userId);
+              toast.success("User Deleted successfully");
+            }}
+          >
+            Delete
+          </button>
+        ),
+      },
+    ],
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    getCoreRowModel: getCoreRowModel(),
+    state: {
+      sorting,
+    },
+  });
   useEffect(() => {
     fetchData();
   }, []);
@@ -37,8 +122,9 @@ export default function Home() {
         ...prevState,
         users: data,
       }));
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to Fetch users");
     }
   };
 
@@ -69,6 +155,7 @@ export default function Home() {
       }));
     } catch (err) {
       console.log(err);
+      toast.error("Failed to add user");
     }
   };
 
@@ -90,24 +177,8 @@ export default function Home() {
       })
       .catch((err) => {
         console.log(err);
+        toast.error("Failed to delete user");
       });
-  };
-
-  const handleSortByName = () => {
-    const sortUsers = [...state.users].sort((a, b) => {
-      if (a.name < b.name) {
-        return state.sortDirection === "asc" ? -1 : 1;
-      }
-      if (a.name > b.name) {
-        return state.sortDirection === "asc" ? 1 : -1;
-      }
-      return 0;
-    });
-    setState((prevState)=>({
-      ...prevState,
-      users: sortUsers,
-      sortDirection: state.sortDirection === "asc" ? "desc" : "asc"
-    }))
   };
   console.log(state.users);
   return (
@@ -119,34 +190,36 @@ export default function Home() {
       <div>
         <Table className="m-[5px] ml-[20%] w-[800px]">
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-[100px]">ID</TableHead>
-              <TableHead onClick={handleSortByName}
-                style={{ cursor: "pointer" }}>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead className="text-right">Delete</TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
-            {state.users?.map((user, index) => {
-              return (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{user.id}</TableCell>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell className="text-right">
-                    <button
-                      className="border-2 border-black p-1"
-                      onClick={() => (
-                        onDelete(user.id), toast("User Detail is deleting")
-                      )}
-                    >
-                      delete
-                    </button>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() && "selected"}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
-                </TableRow>
-              );
-            })}
+                ))}
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>

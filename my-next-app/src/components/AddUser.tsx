@@ -72,7 +72,7 @@ const AddUser: React.FC<AddUserProps> = ({ onAdd }) => {
               </AlertDialogDescription>
               <AlertDialogFooter>
                 <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction type="submit" onClick={() => toast('User is Added!')}>Add User</AlertDialogAction>
+                <AlertDialogAction type="submit" onClick={() => toast.success('User Added successfully!')}>Add User</AlertDialogAction>
               </AlertDialogFooter>
             </form>
           </AlertDialogHeader>
